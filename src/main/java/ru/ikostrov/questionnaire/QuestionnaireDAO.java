@@ -7,6 +7,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import org.h2.server.web.WebServlet;
 
 import javax.servlet.ServletException;
+import javax.sql.DataSource;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -22,11 +23,13 @@ import java.util.stream.Collectors;
 public class QuestionnaireDAO implements Closeable {
     private static Connection connection = null;
     private static Statement statement = null;
+    private static DataSource dataSource = null;
     private static QuestionnaireDAO instance = null;
 
 
-    private QuestionnaireDAO(String url, String login, String pass) throws SQLException {
-        connection = DriverManager.getConnection(url, login, pass);
+    private QuestionnaireDAO(DataSource dataSource) throws SQLException {
+        this.dataSource = dataSource;
+        connection = dataSource.getConnection();
         System.out.println("Connected to database");
         statement = connection.createStatement();
         System.out.println("Statement was created");
@@ -40,10 +43,10 @@ public class QuestionnaireDAO implements Closeable {
         System.out.println("'Questions' table was created");
     }
 
-    public static QuestionnaireDAO init(String url, String login, String pass) {
+    public static QuestionnaireDAO init(DataSource dataSource) {
         if (instance == null) {
             try {
-                instance = new QuestionnaireDAO(url, login, pass);
+                instance = new QuestionnaireDAO(dataSource);
                 initializeQuestions();
             } catch (SQLException e) {
                 e.printStackTrace();

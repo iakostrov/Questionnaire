@@ -7,6 +7,7 @@ import freemarker.template.TemplateExceptionHandler;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.session.*;
+import org.h2.jdbcx.JdbcConnectionPool;
 import ru.ikostrov.questionnaire.handler.AnswerHandler;
 import ru.ikostrov.questionnaire.handler.QuestionHandler;
 
@@ -25,7 +26,7 @@ import static io.undertow.Handlers.routing;
 public class UndertowServer {
 
     public static void main(String[] args) throws IOException, SQLException, ServletException {
-        QuestionnaireDAO.init("jdbc:h2:~/questionnairedb", "mylogin", "mypassword");
+        QuestionnaireDAO.init(JdbcConnectionPool.create("jdbc:h2:~/questionnairedb", "mylogin", "mypassword"));
         Undertow.builder().addHttpListener(8080, "localhost", getHandler()).build().start();
     }
 
