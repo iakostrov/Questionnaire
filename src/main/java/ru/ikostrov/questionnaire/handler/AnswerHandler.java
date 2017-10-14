@@ -1,5 +1,6 @@
 package ru.ikostrov.questionnaire.handler;
 
+import freemarker.template.Configuration;
 import freemarker.template.Template;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
@@ -15,8 +16,9 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionManager;
 import io.undertow.util.Headers;
 import ru.ikostrov.questionnaire.Question;
-import ru.ikostrov.questionnaire.UndertowServer;
+import ru.ikostrov.questionnaire.QuestionnaireDAO;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -32,9 +34,9 @@ public class AnswerHandler implements HttpHandler {
 
     EagerFormParsingHandler inner = null;
 
-    public AnswerHandler(Template template,List<Question> questions) {
-        this.template = template;
-        this.questions = questions;
+    public AnswerHandler(Configuration configuration, QuestionnaireDAO dao) throws IOException {
+        this.template = configuration.getTemplate("resultTemplate.ftl");
+        this.questions = dao.loadAllQuestions();
         FormParserFactory.Builder formPFBuilder = FormParserFactory.builder();
         formPFBuilder.setDefaultCharset(StandardCharsets.UTF_8.name());
         inner = new EagerFormParsingHandler(formPFBuilder.build());
