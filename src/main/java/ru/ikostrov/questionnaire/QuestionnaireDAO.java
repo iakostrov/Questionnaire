@@ -20,15 +20,17 @@ import java.util.stream.Collectors;
 /**
  * Created by User on 01.10.2017.
  */
+
+// TODO: 14.10.2017 Need refactoring 
 public class QuestionnaireDAO implements Closeable {
-    private static Connection connection = null;
-    private static Statement statement = null;
-    private static DataSource dataSource = null;
+    private Connection connection = null;
+    private Statement statement = null;
+    private DataSource dataSource = null;
     private static QuestionnaireDAO instance = null;
 
 
-    private QuestionnaireDAO(DataSource dataSource) throws SQLException {
-        this.dataSource = dataSource;
+    private QuestionnaireDAO(DataSource source) throws SQLException {
+        dataSource = source;
         connection = dataSource.getConnection();
         System.out.println("Connected to database");
         statement = connection.createStatement();
@@ -47,7 +49,7 @@ public class QuestionnaireDAO implements Closeable {
         if (instance == null) {
             try {
                 instance = new QuestionnaireDAO(dataSource);
-                initializeQuestions();
+                instance.initializeQuestions();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -55,7 +57,7 @@ public class QuestionnaireDAO implements Closeable {
         return instance;
     }
 
-    private static void initializeQuestions() {
+    private void initializeQuestions() {
         List<Question> questions = Arrays.asList(
                 new Question(0, " 2 + 2", Arrays.asList("2", "5", "4"), 2),
                 new Question(1, " 3 + 3", Arrays.asList("6", "8", "9"), 0),
@@ -85,12 +87,12 @@ public class QuestionnaireDAO implements Closeable {
         return deploymentManager.start();
     }
 
-    public static void clearQuestionsTable() throws SQLException {
+    public void clearQuestionsTable() throws SQLException {
         getStatement().execute("DELETE FROM Questions");
         System.out.println("Questions table was cleared");
     }
 
-    public static void insertQuestions(List<Question> questions) throws SQLException {
+    public void insertQuestions(List<Question> questions) throws SQLException {
         try (final PreparedStatement preparedStatement =
                      connection.prepareStatement("INSERT INTO Questions (num, text, answers, right) VALUES (?, ?, ?, ?)")) {
             for (Question question : questions) {
@@ -105,27 +107,30 @@ public class QuestionnaireDAO implements Closeable {
         System.out.println("Questions was inserted in the table");
     }
 
-    public static List<Question> loadAllQuestions() throws SQLException {
+    public List<Question> loadAllQuestions() {
         List<Question> questions = new ArrayList<>();
-        final ResultSet resultSet = statement.executeQuery("Select ID, num, text, answers, right from Questions");
-        while (resultSet.next()) {
-            List<String> answers = Arrays.stream((Object[]) resultSet.getObject("answers"))
-                    .map(Object::toString).collect(Collectors.toList());
-            questions.add(new Question(resultSet.getInt("num"),
-                    new String(resultSet.getString("text").getBytes(Charset.forName("UTF-8"))),
-                    answers, resultSet.getInt("right")));
+        try (ResultSet resultSet = statement.executeQuery("Select ID, num, text, answers, right from Questions")) {
+            while (resultSet.next()) {
+                List<String> answers = Arrays.stream((Object[]) resultSet.getObject("answers"))
+                        .map(Object::toString).collect(Collectors.toList());
+                questions.add(new Question(resultSet.getInt("num"),
+                        new String(resultSet.getString("text").getBytes(Charset.forName("UTF-8"))),
+                        answers, resultSet.getInt("right")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return questions;
     }
 
-    public static Connection getConnection() {
+    public Connection getConnection() {
         if (instance != null)
             return connection;
         else
             return null;
     }
 
-    public static Statement getStatement() {
+    public Statement getStatement() {
         if (instance != null)
             return statement;
         else
