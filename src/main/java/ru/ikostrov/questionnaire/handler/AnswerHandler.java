@@ -15,6 +15,8 @@ import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionManager;
 import io.undertow.util.Headers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import ru.ikostrov.questionnaire.Question;
 import ru.ikostrov.questionnaire.QuestionnaireDAO;
 
@@ -28,12 +30,14 @@ import java.util.Map;
 /**
  * Created by User on 14.10.2017.
  */
+@Component
 public class AnswerHandler implements HttpHandler {
     private final List<Question> questions;
     private final Template template;
 
     EagerFormParsingHandler inner = null;
 
+    @Autowired
     public AnswerHandler(Configuration configuration, QuestionnaireDAO dao) throws IOException {
         this.template = configuration.getTemplate("resultTemplate.ftl");
         this.questions = dao.loadAllQuestions();
