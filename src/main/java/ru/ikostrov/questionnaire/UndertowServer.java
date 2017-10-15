@@ -5,7 +5,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.session.InMemorySessionManager;
 import io.undertow.server.session.SessionAttachmentHandler;
 import io.undertow.server.session.SessionCookieConfig;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import static io.undertow.Handlers.routing;
 public class UndertowServer {
 
     public static void main(String[] args) throws IOException, SQLException, ServletException {
-        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+        final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("ru.ikostrov.questionnaire");
         Undertow.builder().addHttpListener(8080, "localhost",
                 new SessionAttachmentHandler(new InMemorySessionManager("SESSION_MANAGER"), new SessionCookieConfig())
                         .setNext(path()
