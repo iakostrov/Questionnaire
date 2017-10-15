@@ -2,9 +2,10 @@ package ru.ikostrov.questionnaire.handler;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
-import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import ru.ikostrov.questionnaire.Question;
 import ru.ikostrov.questionnaire.QuestionnaireDAO;
 
@@ -16,11 +17,13 @@ import java.util.List;
 /**
  * Created by User on 14.10.2017.
  */
-public class QuestionHandler implements HttpHandler {
+@Component
+public class QuestionHandler implements MappedHandler {
     private final Template template;
     private final List<Question> questions;
 
-    public QuestionHandler(Configuration configuration, QuestionnaireDAO dao) throws IOException {
+    @Autowired
+    public QuestionHandler( Configuration configuration, QuestionnaireDAO dao) throws IOException {
         this.template = configuration.getTemplate("questionnaireTemplate.ftl");
         this.questions = dao.loadAllQuestions();
     }
@@ -37,5 +40,15 @@ public class QuestionHandler implements HttpHandler {
         template.process(questions.get(q), stringWriter);
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html; charset=utf-8");
         exchange.getResponseSender().send(stringWriter.toString());
+    }
+
+    @Override
+    public String path() {
+        return "questions";
+    }
+
+    @Override
+    public String method() {
+        return "get";
     }
 }

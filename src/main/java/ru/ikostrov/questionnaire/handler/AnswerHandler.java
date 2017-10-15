@@ -15,6 +15,10 @@ import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionManager;
 import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
+import io.undertow.util.Methods;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import ru.ikostrov.questionnaire.Question;
 import ru.ikostrov.questionnaire.QuestionnaireDAO;
 
@@ -28,12 +32,14 @@ import java.util.Map;
 /**
  * Created by User on 14.10.2017.
  */
-public class AnswerHandler implements HttpHandler {
+@Component
+public class AnswerHandler implements MappedHandler {
     private final List<Question> questions;
     private final Template template;
 
     EagerFormParsingHandler inner = null;
 
+    @Autowired
     public AnswerHandler(Configuration configuration, QuestionnaireDAO dao) throws IOException {
         this.template = configuration.getTemplate("resultTemplate.ftl");
         this.questions = dao.loadAllQuestions();
@@ -86,7 +92,7 @@ public class AnswerHandler implements HttpHandler {
         if (q < questions.size() - 1) {
             session.setAttribute("rightAnswers", rightAnswers2);
             responseCookies.put("rightAnswers", cookieRightAnswers.setValue(String.valueOf(rightAnswers)));
-            Handlers.redirect("question?q=" + (q + 1)).handleRequest(exchange);
+            Handlers.redirect("questions?q=" + (q + 1)).handleRequest(exchange);
         } else {
             final StringWriter responseWriter = new StringWriter();
             final HashMap<String, Object> map = new HashMap<>();
@@ -104,5 +110,15 @@ public class AnswerHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         inner.handleRequest(exchange);
+    }
+
+    @Override
+    public String path() {
+        return "answer";
+    }
+
+    @Override
+    public String method() {
+        return "post";
     }
 }
