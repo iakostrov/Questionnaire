@@ -2,7 +2,6 @@ package ru.ikostrov.questionnaire.handler;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
-import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import org.springframework.beans.factory.annotation.Autowired;

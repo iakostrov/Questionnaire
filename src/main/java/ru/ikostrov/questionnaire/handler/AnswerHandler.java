@@ -15,6 +15,8 @@ import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionManager;
 import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
+import io.undertow.util.Methods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.ikostrov.questionnaire.Question;
@@ -90,7 +92,7 @@ public class AnswerHandler implements MappedHandler {
         if (q < questions.size() - 1) {
             session.setAttribute("rightAnswers", rightAnswers2);
             responseCookies.put("rightAnswers", cookieRightAnswers.setValue(String.valueOf(rightAnswers)));
-            Handlers.redirect("question?q=" + (q + 1)).handleRequest(exchange);
+            Handlers.redirect("questions?q=" + (q + 1)).handleRequest(exchange);
         } else {
             final StringWriter responseWriter = new StringWriter();
             final HashMap<String, Object> map = new HashMap<>();
