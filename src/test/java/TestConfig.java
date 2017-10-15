@@ -2,6 +2,8 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import ru.ikostrov.questionnaire.Question;
 import ru.ikostrov.questionnaire.QuestionnaireDAO;
 import ru.ikostrov.questionnaire.QuestionsHolder;
@@ -9,11 +11,21 @@ import ru.ikostrov.questionnaire.QuestionsHolder;
 import java.util.Arrays;
 
 @Configuration
+@PropertySource("classpath:test.properties")
 public class TestConfig {
+
+    @Autowired
+    Environment env;
+
     @Bean
     @Autowired
-    QuestionnaireDAO prodQuestionnaireDao(QuestionsHolder holder) {
-        return QuestionnaireDAO.init(JdbcConnectionPool.create("jdbc:h2:~/testdb", "mylogin", "mypassword"), holder);
+    QuestionnaireDAO questionnaireDao(QuestionsHolder holder) {
+        return QuestionnaireDAO.init(
+                JdbcConnectionPool.create(
+                        env.getProperty("database.url"),
+                        env.getProperty("database.username"),
+                        env.getProperty("database.password")),
+                holder);
     }
 
     @Bean

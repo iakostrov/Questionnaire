@@ -7,16 +7,27 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 
 @org.springframework.context.annotation.Configuration
 @ComponentScan
+@PropertySource("classpath:settings.properties")
 @SuppressWarnings("unused")
 public class AppConfig {
 
+    @Autowired
+    Environment env;
+
     @Bean
     @Autowired
-    QuestionnaireDAO prodQuestionnaireDao(QuestionsHolder holder) {
-        return QuestionnaireDAO.init(JdbcConnectionPool.create("jdbc:h2:~/questionnairedb", "mylogin", "mypassword"),holder);
+    QuestionnaireDAO questionnaireDao(QuestionsHolder holder) {
+        return QuestionnaireDAO.init(
+                JdbcConnectionPool.create(
+                        env.getProperty("database.url"),
+                        env.getProperty("database.username"),
+                        env.getProperty("database.password")),
+                holder);
     }
 
     @Bean
