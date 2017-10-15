@@ -1,17 +1,13 @@
 package ru.ikostrov.questionnaire;
 
 import io.undertow.Undertow;
-import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.session.InMemorySessionManager;
 import io.undertow.server.session.SessionAttachmentHandler;
 import io.undertow.server.session.SessionCookieConfig;
-import io.undertow.util.HttpString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.ikostrov.questionnaire.handler.AnswerHandler;
 import ru.ikostrov.questionnaire.handler.MappedHandler;
-import ru.ikostrov.questionnaire.handler.QuestionHandler;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
