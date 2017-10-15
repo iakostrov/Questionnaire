@@ -6,6 +6,7 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import org.h2.server.web.WebServlet;
 
+import javax.annotation.PreDestroy;
 import javax.servlet.ServletException;
 import javax.sql.DataSource;
 import java.io.Closeable;
@@ -28,6 +29,13 @@ public class QuestionnaireDAO implements Closeable {
     private DataSource dataSource = null;
     private static QuestionnaireDAO instance = null;
 
+    @PreDestroy
+    void preDestroy() throws SQLException, IOException {
+        this.clearQuestionsTable();
+        this.dropQuestionsTable();
+        this.close();
+    }
+
 
     private QuestionnaireDAO(DataSource source) throws SQLException {
         dataSource = source;
@@ -45,11 +53,11 @@ public class QuestionnaireDAO implements Closeable {
         System.out.println("'Questions' table was created");
     }
 
-    public static QuestionnaireDAO init(DataSource dataSource) {
+    public static QuestionnaireDAO init(DataSource dataSource,QuestionsHolder questionsHolder) {
         if (instance == null) {
             try {
                 instance = new QuestionnaireDAO(dataSource);
-                instance.initializeQuestions();
+                instance.initializeQuestions(questionsHolder);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -57,16 +65,10 @@ public class QuestionnaireDAO implements Closeable {
         return instance;
     }
 
-    private void initializeQuestions() {
-        List<Question> questions = Arrays.asList(
-                new Question(0, " 2 + 2", Arrays.asList("2", "5", "4"), 2),
-                new Question(1, " 3 + 3", Arrays.asList("6", "8", "9"), 0),
-                new Question(2, " 1 - 1", Arrays.asList("-1", "0", "1"), 1),
-                new Question(3, " Кто самый умный", Arrays.asList("Киса", "Мур", "Рома"), 1)
-        );
+    private void initializeQuestions(QuestionsHolder questionsHolder) {
         try {
             clearQuestionsTable();
-            insertQuestions(questions);
+            insertQuestions(questionsHolder.getQuestions());
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -90,6 +92,10 @@ public class QuestionnaireDAO implements Closeable {
     public void clearQuestionsTable() throws SQLException {
         getStatement().execute("DELETE FROM Questions");
         System.out.println("Questions table was cleared");
+    }
+    public void dropQuestionsTable() throws SQLException {
+        getStatement().execute("DROP TABLE Questions");
+        System.out.println("Questions table removed");
     }
 
     public void insertQuestions(List<Question> questions) throws SQLException {
@@ -140,8 +146,14 @@ public class QuestionnaireDAO implements Closeable {
     @Override
     public void close() throws IOException {
         try {
-            statement.close();
-            connection.close();
+            if(!statement.isClosed()) {
+                statement.close();
+                System.out.println("statement closed");
+            }
+            if(!connection.isClosed()) {
+                connection.close();
+                System.out.println("connection closed");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

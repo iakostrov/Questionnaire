@@ -4,16 +4,30 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.TemplateExceptionHandler;
 import org.h2.jdbcx.JdbcConnectionPool;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 
-@Component
+@org.springframework.context.annotation.Configuration
+@ComponentScan
+@PropertySource("classpath:settings.properties")
 @SuppressWarnings("unused")
 public class AppConfig {
 
+    @Autowired
+    Environment env;
+
     @Bean
-    QuestionnaireDAO questionnaireDao() {
-        return QuestionnaireDAO.init(JdbcConnectionPool.create("jdbc:h2:~/questionnairedb", "mylogin", "mypassword"));
+    @Autowired
+    QuestionnaireDAO questionnaireDao(QuestionsHolder holder) {
+        return QuestionnaireDAO.init(
+                JdbcConnectionPool.create(
+                        env.getProperty("database.url"),
+                        env.getProperty("database.username"),
+                        env.getProperty("database.password")),
+                holder);
     }
 
     @Bean
