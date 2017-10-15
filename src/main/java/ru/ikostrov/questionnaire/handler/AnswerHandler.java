@@ -31,7 +31,7 @@ import java.util.Map;
  * Created by User on 14.10.2017.
  */
 @Component
-public class AnswerHandler implements HttpHandler {
+public class AnswerHandler implements MappedHandler {
     private final List<Question> questions;
     private final Template template;
 
@@ -108,5 +108,15 @@ public class AnswerHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         inner.handleRequest(exchange);
+    }
+
+    @Override
+    public String path() {
+        return "answer";
+    }
+
+    @Override
+    public String method() {
+        return "post";
     }
 }
